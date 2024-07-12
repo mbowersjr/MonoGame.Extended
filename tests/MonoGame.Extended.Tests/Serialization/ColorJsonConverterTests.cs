@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Xna.Framework;
-using MonoGame.Extended.Serialization;
+using MonoGame.Extended.Serialization.Json;
 
 namespace MonoGame.Extended.Tests.Serialization;
 
@@ -60,7 +60,7 @@ public sealed class ColorJsonConverterTests
     [Fact]
     public void Write_NullWrier_ThrowArgumentNullException()
     {
-        var color = Color.MonoGameOrange;
+        var color = Color.DarkOrange;
         Assert.Throws<ArgumentNullException>(() => _converter.Write(null, color, new JsonSerializerOptions()));
     }
 }

@@ -5,8 +5,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Content.Pipeline.Graphics;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
+using MonoGame.Extended.Content.Tiled;
 using MonoGame.Extended.Tiled;
-using MonoGame.Extended.Tiled.Serialization;
 
 namespace MonoGame.Extended.Content.Pipeline.Tiled
 {
@@ -220,8 +220,14 @@ namespace MonoGame.Extended.Content.Pipeline.Tiled
             return TiledMapObjectType.Rectangle;
         }
 
-        public override string GetRuntimeType(TargetPlatform targetPlatform) => "MonoGame.Extended.Tiled.TiledMap, MonoGame.Extended.Tiled";
+        public override string GetRuntimeType(TargetPlatform targetPlatform)
+        {
+            return typeof(TiledMap).AssemblyQualifiedName;
+        }
 
-        public override string GetRuntimeReader(TargetPlatform targetPlatform) => "MonoGame.Extended.Tiled.TiledMapReader, MonoGame.Extended.Tiled";
+        public override string GetRuntimeReader(TargetPlatform targetPlatform)
+        {
+            return typeof(TiledMapReader).AssemblyQualifiedName;
+        }
     }
 }

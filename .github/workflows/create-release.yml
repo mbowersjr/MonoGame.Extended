@@ -14,25 +14,30 @@ on:
       prerelease:
         description: 'Is this a prerelease?'
         required: true
-        default: 'true'
+        type: boolean
+        default: true
       source-feed:
-        description: |
-          Which source feed to publish to?
-          (Valid values are 'NuGet' or 'GitHub')
+        description: 'Which source feed to publish to?'
         required: true
-        default: GitHub
+        type: choice
+        options:
+          - GitHub
+          - NuGet
+        default: 'GitHub'
 
 jobs:
   build:
     name: "Build MonoGame.Extended"
     runs-on: ubuntu-latest
     env:
-      IS_PRERELEASE:  ${{ inputs.prerelease == 'true' }}
-      BUILD_NUMBER: ${{ inputs.prerelease == 'true' && github.run_number || '' }}
+      IS_PRERELEASE:  ${{ inputs.prerelease || '' }}
+      BUILD_NUMBER: ${{ inputs.prerelease && github.run_number || '' }}
 
     steps:
       - name: Clone Repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.prerelease && 'develop' || 'main' }}
 
       - name: Setup Dotnet
         uses: actions/setup-dotnet@v4
@@ -40,13 +45,16 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Build MonoGame.Extended
-        run: dotnet build --nologo --verbosity minimal --configuration Release
+        run: dotnet build MonoGame.Extended.sln --nologo --verbosity minimal --configuration Release
 
       - name: Test MonoGame.Extended
-        run: dotnet test --nologo --verbosity minimal --configuration Release
+        run: dotnet test MonoGame.Extended.sln --nologo --verbosity minimal --configuration Release
 
       - name: Pack MonoGame.Extended
-        run: dotnet pack --nologo --verbosity minimal --configuration Release
+        run: dotnet pack MonoGame.Extended.sln --nologo --verbosity minimal --configuration Release
+
+      - name: Pack Kni.Extended
+        run: dotnet pack KNI.Extended.sln --nologo --verbosity minimal --configuration Release
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4

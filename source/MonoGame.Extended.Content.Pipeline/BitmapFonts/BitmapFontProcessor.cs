@@ -1,26 +1,24 @@
 using System;
 using System.IO;
 using Microsoft.Xna.Framework.Content.Pipeline;
-using MonoGame.Extended.BitmapFonts.BmfTypes;
+using MonoGame.Extended.Content.BitmapFonts;
 
 namespace MonoGame.Extended.Content.Pipeline.BitmapFonts
 {
     [ContentProcessor(DisplayName = "BMFont Processor - MonoGame.Extended")]
-    public class BitmapFontProcessor : ContentProcessor<ContentImporterResult<BmfFile>, BitmapFontProcessorResult>
+    public class BitmapFontProcessor : ContentProcessor<ContentImporterResult<BitmapFontFileContent>, BitmapFontProcessorResult>
     {
-        public override BitmapFontProcessorResult Process(ContentImporterResult<BmfFile> importerResult, ContentProcessorContext context)
+        public override BitmapFontProcessorResult Process(ContentImporterResult<BitmapFontFileContent> importerResult, ContentProcessorContext context)
         {
             try
             {
-                BmfFile bmfFile = importerResult.Data;
-                context.Logger.LogMessage("Processing BMFont");
+                BitmapFontFileContent bmfFile = importerResult.Data;
                 var result = new BitmapFontProcessorResult(bmfFile);
 
-                foreach (var fontPage in bmfFile.Pages)
+                foreach (var page in bmfFile.Pages)
                 {
-                    var assetName = Path.GetFileNameWithoutExtension(fontPage);
-                    context.Logger.LogMessage("Expected texture asset: {0}", assetName);
-                    result.TextureAssets.Add(assetName);
+                    context.AddDependency(Path.GetFileName(page));
+                    result.TextureAssets.Add(Path.GetFileNameWithoutExtension(page));
                 }
 
                 return result;

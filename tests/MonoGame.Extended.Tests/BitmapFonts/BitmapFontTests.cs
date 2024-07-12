@@ -1,8 +1,5 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended.BitmapFonts;
-using MonoGame.Extended.TextureAtlases;
-using Xunit;
+﻿using MonoGame.Extended.BitmapFonts;
+using MonoGame.Extended.Graphics;
 
 namespace MonoGame.Extended.Tests.BitmapFonts
 {
@@ -78,7 +75,7 @@ namespace MonoGame.Extended.Tests.BitmapFonts
 
         private static BitmapFont CreateTestFont()
         {
-            var textureRegion = new TextureRegion2D(null, x: 219, y: 61, width: 16, height: 18);
+            var textureRegion = new Texture2DRegion("Test Font", x: 219, y: 61, width: 16, height: 18);
             var regions = new[]
             {
                 // extracted from 'Impact' font. 'x' is particularly interesting because it has a negative x offset

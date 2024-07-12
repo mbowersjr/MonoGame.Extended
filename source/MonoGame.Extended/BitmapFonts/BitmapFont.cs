@@ -9,8 +9,8 @@ using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGame.Extended.BitmapFonts.BmfTypes;
-using MonoGame.Extended.TextureAtlases;
+using MonoGame.Extended.Content.BitmapFonts;
+using MonoGame.Extended.Graphics;
 
 namespace MonoGame.Extended.BitmapFonts;
 
@@ -38,7 +38,7 @@ public sealed class BitmapFont
         }
     }
 
-    public BitmapFontCharacter GetCharacter(int character) => _characters[character];
+    public BitmapFontCharacter GetCharacter(int character) => _characters.TryGetValue(character, out BitmapFontCharacter fontCharacter) ? fontCharacter : null;/*  _characters[character];*/
     public bool TryGetCharacter(int character, out BitmapFontCharacter value) => _characters.TryGetValue(character, out value);
 
     public SizeF MeasureString(string text)
@@ -370,7 +370,7 @@ public sealed class BitmapFont
 
     public static BitmapFont FromStream(GraphicsDevice graphicsDevice, FileStream stream)
     {
-        BmfFile bmfFile = BmfFile.FromStream(stream);
+        var bmfFile = BitmapFontFileReader.Read(stream);
 
         //  Load page textures
         Dictionary<string, Texture2D> pages = new Dictionary<string, Texture2D>();
@@ -378,9 +378,12 @@ public sealed class BitmapFont
         {
             if (!pages.ContainsKey(bmfFile.Pages[i]))
             {
-                string texturePath = Path.Combine(bmfFile.Path, bmfFile.Pages[i]);
-                Texture2D texture = Texture2D.FromFile(graphicsDevice, texturePath);
-                pages.Add(bmfFile.Pages[i], texture);
+                string texturePath = Path.Combine(Path.GetDirectoryName(bmfFile.Path), bmfFile.Pages[i]);
+                using (Stream textureStream = File.OpenRead(texturePath))
+                {
+                    Texture2D texture = Texture2D.FromStream(graphicsDevice, textureStream);
+                    pages.Add(bmfFile.Pages[i], texture);
+                }
             }
         }
 
@@ -388,9 +391,9 @@ public sealed class BitmapFont
         Dictionary<int, BitmapFontCharacter> characters = new Dictionary<int, BitmapFontCharacter>();
         for (int i = 0; i < bmfFile.Characters.Count; i++)
         {
-            BmfCharsBlock charBlock = bmfFile.Characters[i];
+            var charBlock = bmfFile.Characters[i];
             Texture2D texture = pages[bmfFile.Pages[charBlock.Page]];
-            TextureRegion2D region = new TextureRegion2D(texture, charBlock.X, charBlock.Y, charBlock.Width, charBlock.Height);
+            Texture2DRegion region = new Texture2DRegion(texture, charBlock.X, charBlock.Y, charBlock.Width, charBlock.Height);
             BitmapFontCharacter character = new BitmapFontCharacter((int)charBlock.ID, region, charBlock.XOffset, charBlock.YOffset, charBlock.XAdvance);
             characters.Add(character.Character, character);
         }
@@ -398,7 +401,7 @@ public sealed class BitmapFont
         //  Load kernings
         for (int i = 0; i < bmfFile.Kernings.Count; i++)
         {
-            BmfKerningPairsBlock kerningBlock = bmfFile.Kernings[i];
+            var kerningBlock = bmfFile.Kernings[i];
             if (characters.TryGetValue((int)kerningBlock.First, out BitmapFontCharacter character))
             {
                 character.Kernings.Add((int)kerningBlock.Second, kerningBlock.Amount);
